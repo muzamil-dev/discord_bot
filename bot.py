@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 
+# Intents are required to access certain events
 intents = discord.Intents.default()
 intents.typing = False
 intents.presences = False
