@@ -6,6 +6,7 @@ intents = discord.Intents.default()
 intents.typing = False
 intents.presences = False
 
+# Create a bot instance
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 @bot.event
