@@ -17,4 +17,5 @@ async def on_ready():
 async def hello(ctx):
     await ctx.send('Hello!')
 
+# insert token here
 bot.run('YOUR_TOKEN')
