@@ -13,6 +13,7 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 async def on_ready():
     print(f'Logged in as {bot.user}!')
 
+#say hello
 @bot.command()
 async def hello(ctx):
     await ctx.send('Hello!')
