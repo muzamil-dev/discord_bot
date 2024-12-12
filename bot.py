@@ -19,4 +19,4 @@ async def hello(ctx):
     await ctx.send('Hello!')
 
 # insert token here
-bot.run('YOUR_TOKEN')
+bot.run('1130606859850629160')
