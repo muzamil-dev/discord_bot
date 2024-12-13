@@ -9,6 +9,7 @@ intents.presences = False
 # Create a bot instance
 bot = commands.Bot(command_prefix='!', intents=intents)
 
+#logged in 
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}!')
