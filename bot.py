@@ -14,16 +14,20 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 async def on_ready():
     print(f'Logged in as {bot.user}!')
 
-# Event: Respond to messages containing "hello"
+# Event: Respond to specific keywords
 @bot.event
 async def on_message(message):
     # Avoid responding to the bot's own messages
     if message.author == bot.user:
         return
 
-    # Check if the word "hello" is in the message
+    # Respond if "hello" is mentioned
     if "hello" in message.content.lower():
         await message.channel.send('Hello!')
+
+    # Respond if "outside" is mentioned
+    if "outside" in message.content.lower():
+        await message.channel.send("I'm a programmer I don't get to go outside, go touch some grass.")
 
     # Process commands if they are used
     await bot.process_commands(message)
