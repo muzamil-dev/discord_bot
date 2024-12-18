@@ -100,6 +100,11 @@ async def on_message(message):
 
     # Process commands if they are used
     await bot.process_commands(message)
+    
+@bot.command()
+async def hello(ctx):
+    await ctx.send(f"Hello {ctx.author.mention}!")
+
 
 # Insert your bot token
 bot.run('')
