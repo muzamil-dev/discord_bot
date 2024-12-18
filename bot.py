@@ -56,6 +56,7 @@ async def roulette(ctx):
             # Kick the user
             await ctx.guild.kick(ctx.author, reason="Lost at Russian roulette")
         except discord.Forbidden:
+            
             await ctx.send("I don't have permission to kick members!")
         except discord.HTTPException as e:
             await ctx.send(f"Something went wrong: {e}")
