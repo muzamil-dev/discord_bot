@@ -101,9 +101,17 @@ async def on_message(message):
     # Process commands if they are used
     await bot.process_commands(message)
     
-@bot.command()
-async def hello(ctx):
-    await ctx.send(f"Hello {ctx.author.mention}!")
+@bot.event
+async def hello(message):
+
+    if message.author == bot.user:
+        return
+
+    if "hello" in message.content.lower():
+        await message.channel.send(f"Hello {message.author.mention}!")
+
+
+    await bot.process_commands(message)
 
 
 # Insert your bot token
