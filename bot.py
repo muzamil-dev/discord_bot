@@ -1,34 +1,107 @@
 import discord
 from discord.ext import commands
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
-import random  # For random selection of GIFs and images
+from yt_dlp import YoutubeDL
+import random
+import requests
+import os
 
-# Intents are required to access certain events
+# Intents for accessing specific events
 intents = discord.Intents.default()
-intents.messages = True  # Enable message intents to listen to messages
-intents.message_content = True  # Required to read message content
-intents.guilds = True  # Required to access guild information
-intents.members = True  # Required to kick members
+intents.message_content = True
+intents.guilds = True
+intents.members = True
+intents.voice_states = True
 
-# Create a bot instance
+# Create bot instance with intents
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 # Predefined list of GIF and image URLs
 gif_urls = [
     "https://tenor.com/view/cat-kitty-running-playing-having-fun-gif-26860048",
     "https://tenor.com/view/yugioh-trap-card-trap-triggered-gif-12909225702038116",
+    "https://tenor.com/view/my-honest-reaction-honest-reaction-skull-skeleton-gif-7769318199696770420",
 ]
 
 image_urls = [
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQd0LFdypsYvgil3bXjwExCaBXe6lcfl59L0Q&s",
     "https://dims.apnews.com/dims4/default/06edab5/2147483647/strip/false/crop/8145x5429+0+0/resize/1486x990!/quality/90/?url=https%3A%2F%2Fassets.apnews.com%2Fa8%2Ff8%2F88f3b8e5167fd80b24a4172d27c4%2Fe8aaccd031bf4d49a01a1ec253c623f0",
+    "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.cs.ucf.edu%2Fwp-content%2Fuploads%2F2019%2F09%2Fimg_ahmed.jpg&f=1&nofb=1&ipt=d9ef23b05c329d78c00afda6dd5384426aa231efe2757ed1779923d6e54c04ec&ipo=images",
 ]
 
-# Event: When the bot is logged in and ready
+# Hugging Face API details (use env variable for security)
+API_KEY = os.getenv("HF_API")
+API_URL = "https://api-inference.huggingface.co/models/EleutherAI/gpt-neo-125M"
+
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}!')
+
+# LLM Command
+@bot.command()
+async def llm(ctx, *, prompt: str):
+    """Generate a response from Hugging Face's hosted GPT-Neo model."""
+    headers = {
+        "Authorization": f"Bearer {API_KEY}"
+    }
+    payload = {
+        "inputs": prompt
+    }
+
+    try:
+        # Make the API request
+        response = requests.post(API_URL, headers=headers, json=payload)
+
+        if response.status_code == 200:
+            # Parse the response and send the result back to Discord
+            generated_text = response.json()[0]["generated_text"]
+            await ctx.send(f"🤖 **LLM Response:** {generated_text}")
+        else:
+            await ctx.send(f"❌ Failed to get a response: {response.status_code} - {response.text}")
+    except Exception as e:
+        await ctx.send(f"❌ An error occurred: {str(e)}")
+
+# Play YouTube Audio Command
+@bot.command()
+async def play(ctx, url: str):
+    """Joins the user's voice channel and plays audio from the given YouTube URL."""
+    if ctx.author.voice is None:
+        await ctx.send("You need to be in a voice channel to use this command!")
+        return
+
+    voice_channel = ctx.author.voice.channel
+
+    try:
+        # Connect to the voice channel
+        if ctx.voice_client is None:
+            await voice_channel.connect()
+        elif ctx.voice_client.channel != voice_channel:
+            await ctx.voice_client.move_to(voice_channel)
+
+        # Use yt-dlp to get audio stream URL
+        YDL_OPTIONS = {'format': 'bestaudio/best', 'quiet': True}
+        FFMPEG_OPTIONS = {'options': '-vn'}
+        with YoutubeDL(YDL_OPTIONS) as ydl:
+            info = ydl.extract_info(url, download=False)
+            audio_url = info['url']
+
+        # Play the audio
+        ctx.voice_client.stop()  # Stop any existing audio
+        ctx.voice_client.play(discord.FFmpegPCMAudio(audio_url, **FFMPEG_OPTIONS))
+        await ctx.send(f"Now playing: {info['title']}")
+    except Exception as e:
+        if ctx.voice_client:
+            await ctx.voice_client.disconnect()
+        await ctx.send(f"An error occurred: {e}")
+
+# Stop command to disconnect bot from VC
+@bot.command()
+async def stop(ctx):
+    """Stops the audio and disconnects the bot from the voice channel."""
+    if ctx.voice_client is not None:
+        await ctx.voice_client.disconnect()
+        await ctx.send("Disconnected from the voice channel.")
+    else:
+        await ctx.send("I'm not connected to a voice channel.")
 
 # Command: Russian Roulette
 @bot.command()
@@ -56,7 +129,6 @@ async def roulette(ctx):
             # Kick the user
             await ctx.guild.kick(ctx.author, reason="Lost at Russian roulette")
         except discord.Forbidden:
-            
             await ctx.send("I don't have permission to kick members!")
         except discord.HTTPException as e:
             await ctx.send(f"Something went wrong: {e}")
@@ -97,6 +169,9 @@ async def on_message(message):
 
     if "sunraku" in message.content.lower():
         await message.channel.send("I hate Sunraku")
+
+    if "good night" in message.content.lower():
+        await message.channel.send("Good night! Sleep tight!")
 
     # Process commands if they are used
     await bot.process_commands(message)
