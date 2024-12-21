@@ -4,6 +4,10 @@ from yt_dlp import YoutubeDL
 import random
 import requests
 import os
+import asyncio
+
+# API KEYS IN ONE LOCATION
+HF_APIKEY = ""
 
 # Intents for accessing specific events
 intents = discord.Intents.default()
@@ -29,7 +33,7 @@ image_urls = [
 ]
 
 # Hugging Face API details (use env variable for security)
-API_KEY = os.getenv("HF_API")
+API_KEY = os.getenv(HF_APIKEY)
 API_URL = "https://api-inference.huggingface.co/models/EleutherAI/gpt-neo-125M"
 
 @bot.event
@@ -136,6 +140,37 @@ async def roulette(ctx):
         # The user "survives"
         await ctx.send(f"{ctx.author.mention} pulled the trigger... **click**. You survived!")
 
+@bot.command()
+async def motivate(ctx):
+    """Send a random motivational quote."""
+    try:
+        response = requests.get("https://zenquotes.io/api/random")
+        if response.status_code == 200:
+            quote = response.json()[0]['q']
+            author = response.json()[0]['a']
+            await ctx.send(f"💪 **Motivational Quote:** \"{quote}\" - {author}")
+        else:
+            await ctx.send(f"❌ Failed to get a quote: {response.status_code} - {response.text}")
+    except Exception as e:
+        await ctx.send(f"❌ An error occurred: {str(e)}")
+
+@bot.command()
+async def timeout(ctx, member: discord.Member):
+    """Timeout a member and the user who triggers the command."""
+    try:
+        # Random timeout duration between 1 to 3 minutes
+        duration = random.randint(1, 3)
+        
+        # Timeout the specified member
+        await member.timeout(discord.utils.utcnow() + discord.timedelta(minutes=duration))
+        await ctx.send(f"⏳ {member.mention} has been timed out for {duration} minutes.")
+
+        # Timeout the user who triggered the command for double the duration
+        await ctx.author.timeout(discord.utils.utcnow() + discord.timedelta(minutes=duration * 2))
+        await ctx.send(f"⏳ {ctx.author.mention} has also been timed out for {duration * 2} minutes.")
+    except Exception as e:
+        await ctx.send(f"❌ An error occurred: {str(e)}")
+
 # Event: Respond to messages
 @bot.event
 async def on_message(message):
@@ -160,7 +195,11 @@ async def on_message(message):
         await message.channel.send(random_gif)
 
     if "lotr" in message.content.lower():
-        await message.channel.send("MID")
+        await message.channel.send("LEGEND")
+        await asyncio.sleep(1)  # Wait for 1 second
+        await message.channel.send("...wait for it...")
+        await asyncio.sleep(1)  # Wait for 1 second
+        await message.channel.send("DARY")
 
     # Respond with a random image if "image" is mentioned
     if "image" in message.content.lower():
@@ -172,6 +211,16 @@ async def on_message(message):
 
     if "good night" in message.content.lower():
         await message.channel.send("Good night! Sleep tight!")
+
+    if "i hate sunraku" in message.content.lower():
+        sunraku = discord.utils.get(message.guild.members, name="sunraku")
+        if sunraku:
+            try:
+                # Timeout the user sunraku for 10 minutes
+                await sunraku.timeout(discord.utils.utcnow() + discord.timedelta(minutes=random.randint(1, 3)))
+                await message.channel.send(f"⏳ {sunraku.mention} has been timed out for 10 minutes.")
+            except Exception as e:
+                await message.channel.send(f"❌ An error occurred: {str(e)}")
 
     # Process commands if they are used
     await bot.process_commands(message)
