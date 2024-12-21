@@ -1,4 +1,4 @@
-import discord
+import discord, tasks, datetime
 from discord.ext import commands
 from yt_dlp import YoutubeDL
 import random
@@ -207,7 +207,10 @@ async def on_message(message):
         await message.channel.send(random_image)
 
     if "sunraku" in message.content.lower():
-        await message.channel.send("I hate Sunraku")
+        await message.channel.send("I love Sunraku")
+
+    if any(keyword in message.content.lower() for keyword in ["mill", "muzamill"]):
+        await message.channel.send("I hate MuzaMill, bro sucks on nuts")
 
     if "good night" in message.content.lower():
         await message.channel.send("Good night! Sleep tight!")
@@ -226,7 +229,7 @@ async def on_message(message):
     await bot.process_commands(message)
     
 @bot.event
-async def hello(message):
+async def on_message(message):
 
     if message.author == bot.user:
         return
@@ -236,6 +239,33 @@ async def hello(message):
 
 
     await bot.process_commands(message)
+
+@tasks.loop(hours=1)
+async def check_christmas():
+    now = datetime.datetime.now()
+
+    if now.month == 12 and now.day == 25:
+        await bot.change_presence(activity=discord.Game("🎄 Merry Christmas"))
+        print("It's Christmas! status updated")
+    
+        channel_id = 1145053714114166846
+
+        channel = bot.get_channel(channel_id)
+
+        if channel:
+            await channel.send("🎄 Merry Christmas, everyone! Have a wonderful holiday! 🎅")
+    
+    else: 
+
+        await bot.change_presence(activity=discord.Game("Available for commands"))
+        print("It's not Christmas")
+
+
+@bot.command()
+async def test_christmas(ctx):
+    """Manually test the Christmas message and status update."""
+    await bot.change_presence(activity=discord.Game("🎄 Merry Christmas!"))
+    await ctx.send("🎄 Merry Christmas, everyone! Have a wonderful holiday! 🎅")
 
 
 # Insert your bot token
