@@ -194,7 +194,7 @@ async def spam(ctx, member: discord.Member):
             while spamIndic == 1:
                 await channel.send(f"{member.mention}{member.mention}{member.mention}{member.mention}!!!!!!!")
         except Exception as e:
-            await ctx.send("That shit did not work...")
+            await ctx.send("That did not work...")
 
 @bot.command()
 async def silence(ctx):  
