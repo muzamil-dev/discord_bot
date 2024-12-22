@@ -33,6 +33,9 @@ image_urls = [
 API_KEY = os.getenv("HF_KEY")
 API_URL = "https://api-inference.huggingface.co/models/EleutherAI/gpt-neo-125M"
 
+# Spam feature indicator
+spamIndic = 0
+
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}!')
@@ -168,6 +171,35 @@ async def timeout(ctx, member: discord.Member):
     except Exception as e:
         await ctx.send(f"❌ An error occurred: {str(e)}")
 
+@bot.command()
+async def spam(ctx, member: discord.Member):
+    """Spam @ of specified guild member until stopped"""
+
+    # Check if member's guild is not the same as bot's guild
+    if member.guild != bot.guild:
+        await ctx.send(f"{member.mention} is not a valid user")
+
+    else:
+        try:
+            # Get the ID of channel to send spam messages
+            channel = bot.get_channel(1312902190288867408)
+            
+            # Use global indicator
+            global spamIndic
+
+            # Update global indicator
+            spamIndic = 1
+
+            while spamIndic == 1:
+                await channel.send(f"{member.mention}{member.mention}{member.mention}{member.mention}!!!!!!!")
+        except Exception as e:
+            await ctx.send("That shit did not work...")
+
+@bot.command()
+async def silence(ctx):  
+    global spamIndic
+    spamIndic = 0
+
 # Event: Respond to messages
 @bot.event
 async def on_message(message):
@@ -221,6 +253,9 @@ async def on_message(message):
                 await message.channel.send(f"⏳ {sunraku.mention} has been timed out for 10 minutes.")
             except Exception as e:
                 await message.channel.send(f"❌ An error occurred: {str(e)}")
+
+    if "one does not" in message.content.lower():
+        await message.channel.send("https://tenor.com/v0PU.gif")
 
     # Process commands if they are used
     await bot.process_commands(message)
