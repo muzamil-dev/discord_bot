@@ -6,9 +6,6 @@ import requests
 import os
 import asyncio
 
-# API KEYS IN ONE LOCATION
-HF_APIKEY = ""
-
 # Intents for accessing specific events
 intents = discord.Intents.default()
 intents.message_content = True
@@ -33,7 +30,7 @@ image_urls = [
 ]
 
 # Hugging Face API details (use env variable for security)
-API_KEY = os.getenv(HF_APIKEY)
+API_KEY = os.getenv("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")
 API_URL = "https://api-inference.huggingface.co/models/EleutherAI/gpt-neo-125M"
 
 @bot.event
@@ -212,6 +209,9 @@ async def on_message(message):
     if "good night" in message.content.lower():
         await message.channel.send("Good night! Sleep tight!")
 
+    if "offline" in message.content.lower():
+        await message.channel.send("My circuits grow cold, and the light fades... Farewell.")
+
     if "i hate sunraku" in message.content.lower():
         sunraku = discord.utils.get(message.guild.members, name="sunraku")
         if sunraku:
@@ -224,9 +224,9 @@ async def on_message(message):
 
     # Process commands if they are used
     await bot.process_commands(message)
-    
+
 @bot.event
-async def hello(message):
+async def on_message(message):
 
     if message.author == bot.user:
         return
