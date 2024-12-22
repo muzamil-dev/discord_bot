@@ -30,7 +30,7 @@ image_urls = [
 ]
 
 # Hugging Face API details (use env variable for security)
-API_KEY = os.getenv("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")
+API_KEY = os.getenv("HF_KEY")
 API_URL = "https://api-inference.huggingface.co/models/EleutherAI/gpt-neo-125M"
 
 @bot.event
