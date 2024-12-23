@@ -177,7 +177,7 @@ async def spam(ctx, member: discord.Member):
     """Spam @ of specified guild member until stopped"""
 
     # Check if member's guild is not the same as bot's guild
-    if member.guild != bot.guild:
+    if member.guild != ctx.author.guild:
         await ctx.send(f"{member.mention} is not a valid user")
 
     else:
