@@ -7,6 +7,7 @@ import requests
 import os
 import asyncio
 from datetime import timedelta, datetime
+from googletrans import Translator
 
 # Intents for accessing specific events
 intents = discord.Intents.default()
@@ -357,6 +358,19 @@ async def test_christmas(ctx):
     except Exception as e:
         await ctx.send("An error occurred while testing the Christmas message.")
         print(f"Error in test_christmas: {e}")
+
+translator = Translator()
+
+@bot.command()
+async def translate(ctx, target_language: str, *, text:str):
+    """Translate text to a target language using googletrans"""
+    try:
+        translation = translator.translate(text, dest=target_language)
+        await ctx.send(f"Translated to {target_language}: {translation.text}")
+    except Exception as e:
+        await ctx.send(f"Sorry, I coundn't translate that. Error: {e}")
+
+
 
     #dox command
     # Fake dox details
