@@ -36,6 +36,8 @@ image_urls = [
 
 cool_emojis = ["🐐", "🚀", "💪", "🔥", "❤️", "🎯", "🌟", "🏆", "⚡", "👑"]
 
+spamIndic = 0
+
 # Hugging Face API details
 API_KEY = os.getenv(" ") 
 API_URL = "https://api-inference.huggingface.co/models/EleutherAI/gpt-neo-125M"
@@ -132,15 +134,66 @@ async def motivate(ctx):
     except Exception as e:
         await ctx.send(f"❌ An error occurred: {str(e)}")
 
+# Dictionary to store information about who timed out whom
+timeout_tracking = {}
+
 @bot.command()
 async def timeout(ctx, member: discord.Member):
+    """Timeout a user for a random power-of-2 duration, and double-timeout the initiator."""
     try:
-        duration = random.randint(1, 3)
-        until_time = datetime.utcnow() + timedelta(minutes=duration)
-        await member.edit(timeout_until=until_time)
-        await ctx.send(f"⏳ {member.mention} has been timed out for {duration} minutes.")
-    except Exception as e:
-        await ctx.send(f"❌ An error occurred: {str(e)}")
+        # Select a random duration in powers of 2 (1, 2, 4, 8, 16 minutes)
+        random_duration = random.choice([1, 2, 4, 8, 16])
+        duration = timedelta(minutes=random_duration)
+
+        # Timeout the target user
+        await member.timeout(duration)
+        await ctx.send(f"⏳ {member.mention} has been timed out for {random_duration} minute(s).")
+
+        # Store the initiator and the timeout duration for later use
+        timeout_tracking[member.id] = (ctx.author.id, random_duration)
+
+        # Wait for the timeout duration to complete (optional for notification)
+        await discord.utils.sleep_until(discord.utils.utcnow() + duration)
+
+        # Timeout the original initiator for double the time
+        initiator = ctx.author
+        double_duration = timedelta(minutes=random_duration * 2)
+        await initiator.timeout(double_duration)
+        await ctx.send(f"🔄 {initiator.mention} has been timed out for {random_duration * 2} minute(s) as a response.")
+
+    except discord.Forbidden:
+        await ctx.send("❌ I do not have permission to timeout this user.")
+    except discord.HTTPException as e:
+        await ctx.send(f"❌ An error occurred while trying to timeout the user: {str(e)}")
+
+@bot.command()
+async def spam(ctx, member: discord.Member):
+    """Spam @ of specified guild member until stopped"""
+
+    # Check if member's guild is not the same as bot's guild
+    if member.guild != ctx.author.guild:
+        await ctx.send(f"{member.mention} is not a valid user")
+
+    else:
+        try:
+            # Get the ID of channel to send spam messages
+            channel = bot.get_channel(1312902190288867408)
+            
+            # Use global indicator
+            global spamIndic
+
+            # Update global indicator
+            spamIndic = 1
+
+            while spamIndic == 1:
+                await channel.send(f"{member.mention}{member.mention}{member.mention}{member.mention}!!!!!!!")
+        except Exception as e:
+            await ctx.send("That did not work...")
+
+@bot.command()
+async def silence(ctx):  
+    global spamIndic
+    spamIndic = 0
 
 @bot.event
 async def on_message(message):
@@ -233,6 +286,9 @@ async def on_message(message):
         outcome = random.choice(["Heads", "Tails"])
         await message.channel.send(f"🪙 You got: {outcome}")
 
+    elif "one does not" in message.content.lower():
+        await message.channel.send("https://tenor.com/v0PU.gif")
+
     # Process other commands
     await bot.process_commands(message)
 
@@ -301,10 +357,6 @@ async def test_christmas(ctx):
     except Exception as e:
         await ctx.send("An error occurred while testing the Christmas message.")
         print(f"Error in test_christmas: {e}")
-
-
-# List of cool emojis
-
 
     #dox command
     # Fake dox details
