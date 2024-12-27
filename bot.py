@@ -6,8 +6,19 @@ import random
 import requests
 import os
 import asyncio
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 from googletrans import Translator
+from transformers import AutoTokenizer, AutoModelForCausalLM
+import torch
+import signal
+
+# Keys
+# Make a .env and then add the following
+# DISCORD_BOT_TOKEN=YOUR_DISCORD_BOT
+# HF_API_KEY=HF_API_KEY
+# Then gitignore .env
+API_BOT_KEY = os.getenv("DISCORD_BOT_TOKEN")
+API_KEY = os.getenv("HF_API_KEY")
 
 # Intents for accessing specific events
 intents = discord.Intents.default()
@@ -39,29 +50,62 @@ cool_emojis = ["🐐", "🚀", "💪", "🔥", "❤️", "🎯", "🌟", "🏆",
 
 spamIndic = 0
 
-# Hugging Face API details
-API_KEY = os.getenv(" ") 
-API_URL = "https://api-inference.huggingface.co/models/EleutherAI/gpt-neo-125M"
+# Load pre-trained model and tokenizer
+model_name = 'Qwen/Qwen2.5-Coder-3B-Instruct-GPTQ-Int4'
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name, low_cpu_mem_usage=True)
+
+# Move model to GPU if available
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device)
+
+async def generate_response(prompt):
+    inputs = tokenizer.encode(prompt, return_tensors='pt').to(device)
+    attention_mask = torch.ones(inputs.shape, dtype=torch.long).to(device)
+    outputs = model.generate(
+        inputs, 
+        attention_mask=attention_mask, 
+        max_new_tokens=300, 
+        num_return_sequences=1, 
+        pad_token_id=tokenizer.eos_token_id
+    )
+    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    return response
 
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}!')
+    channel_id = 1312902190288867408 
+    channel = bot.get_channel(channel_id)
+    if channel:
+        await channel.send("Mill has woken up! 🤖")
+    else:
+        print(f"Channel with ID {channel_id} not found.")
 
-# LLM Command
+async def send_shutdown_message():
+    channel_id = 1312902190288867408  
+    channel = bot.get_channel(channel_id)
+    if channel:
+        await channel.send("Bot is shutting down! ⚠️")
+    else:
+        print(f"Channel with ID {channel_id} not found.")
+
+def handle_shutdown_signal(signal, frame):
+    loop = asyncio.get_event_loop()
+    loop.create_task(send_shutdown_message())
+    loop.call_soon_threadsafe(loop.stop)
+
+signal.signal(signal.SIGINT, handle_shutdown_signal)
+signal.signal(signal.SIGTERM, handle_shutdown_signal)
+
+# LLM Command 
 @bot.command()
 async def llm(ctx, *, prompt: str):
-    headers = {"Authorization": f"Bearer {API_KEY}"}
-    payload = {"inputs": prompt}
-
     try:
-        response = requests.post(API_URL, headers=headers, json=payload)
-        if response.status_code == 200:
-            generated_text = response.json()[0]["generated_text"]
-            await ctx.send(f"🤖 **LLM Response:** {generated_text}")
-        else:
-            await ctx.send(f"❌ Failed to get a response: {response.status_code} - {response.text}")
+        response = await generate_response(prompt)
+        await ctx.send(response)
     except Exception as e:
-        await ctx.send(f"❌ An error occurred: {str(e)}")
+        await ctx.send(f"An error occurred: {e}")
 
 # Play YouTube Audio Command
 @bot.command()
@@ -201,6 +245,11 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
+    if "generate" in message.content.lower():
+        prompt = message.content.lower().replace("generate", "").strip()
+        response = await generate_response(prompt)
+        await message.channel.send(response)
+
     # Respond to 'hello'
     if "hello" in message.content.lower():
         await message.channel.send(f"Hello {message.author.mention}!")
@@ -230,17 +279,21 @@ async def on_message(message):
         await message.channel.send("DARY")
 
     # Respond to 'sunraku' or 'i hate sunraku'
-    elif "sunraku" in message.content.lower():
-        await message.channel.send("I hate Sunraku")
     elif "i hate sunraku" in message.content.lower():
-        sunraku = discord.utils.get(message.guild.members, name="sunraku")
+        sunraku_id = 1207552021385969675
+        sunraku = message.guild.get_member(sunraku_id)
         if sunraku:
             try:
-                # Timeout the user sunraku for 10 minutes
-                await sunraku.timeout(discord.utils.utcnow() + discord.timedelta(minutes=random.randint(1, 3)))
-                await message.channel.send(f"⏳ {sunraku.mention} has been timed out for 10 minutes.")
+                # Timeout the user sunraku for a random duration between 1 and 3 minutes
+                timeout_duration = timedelta(minutes=random.randint(1, 3))
+                timeout_until = datetime.now(timezone.utc) + timeout_duration
+                await sunraku.edit(timed_out_until=timeout_until)
+                await message.channel.send(f"⏳ {sunraku.mention} has been timed out for {timeout_duration.total_seconds() // 60} minutes.")
             except Exception as e:
                 await message.channel.send(f"❌ An error occurred: {str(e)}")
+    
+    elif "sunraku" in message.content.lower():
+        await message.channel.send("I hate Sunraku")
 
     # Respond to 'good night'
     elif "good night" in message.content.lower():
@@ -289,6 +342,13 @@ async def on_message(message):
 
     elif "one does not" in message.content.lower():
         await message.channel.send("https://tenor.com/v0PU.gif")
+    
+    elif "generate" in message.content.lower():
+        await message.channel.send("Blud think im ChatGPT or something")
+    elif "rm -rf" in message.content.lower():
+        await message.channel.send("https://tenor.com/view/linux-sudo-rm-rf-gif-24248977")
+    elif "griddy" in message.content.lower():
+        await message.channel.send("https://discord.com/channels/1145053712704872519/1310472438785507358/1321354263716298782")
 
     # Process other commands
     await bot.process_commands(message)
@@ -370,8 +430,6 @@ async def translate(ctx, target_language: str, *, text:str):
     except Exception as e:
         await ctx.send(f"Sorry, I coundn't translate that. Error: {e}")
 
-
-
     #dox command
     # Fake dox details
 fake_addresses = [
@@ -411,4 +469,8 @@ async def dox(ctx, member: discord.Member):
                    f"📞 Phone: {phone}\n"
                    f"🌐 IP: {ip}\n")
 
-bot.run(' ')
+try:
+    bot.run(API_BOT_KEY)
+except RuntimeError as e:
+    if str(e) != "Event loop stopped before Future completed.":
+        raise
