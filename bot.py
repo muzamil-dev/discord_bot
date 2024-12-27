@@ -11,14 +11,25 @@ from googletrans import Translator
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 import signal
+from dotenv import load_dotenv
+import torch
+import warnings
+
+warnings.filterwarnings("ignore", category=FutureWarning)
+warnings.filterwarnings("ignore", message="`loss_type=None` was set in the config but it is unrecognised.Using the default loss: `ForCausalLMLoss`.")
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Keys
-# Make a .env and then add the following
-# DISCORD_BOT_TOKEN=YOUR_DISCORD_BOT
-# HF_API_KEY=HF_API_KEY
-# Then gitignore .env
 API_BOT_KEY = os.getenv("DISCORD_BOT_TOKEN")
 API_KEY = os.getenv("HF_API_KEY")
+
+# Check if the keys are loaded correctly
+if API_BOT_KEY is None:
+    raise ValueError("DISCORD_BOT_TOKEN is not set")
+if API_KEY is None:
+    raise ValueError("HF_API_KEY is not set")
 
 # Intents for accessing specific events
 intents = discord.Intents.default()
@@ -50,37 +61,52 @@ cool_emojis = ["🐐", "🚀", "💪", "🔥", "❤️", "🎯", "🌟", "🏆",
 
 spamIndic = 0
 
+# Should print True if CUDA is available
+print(torch.cuda.is_available())  
+
 # Load pre-trained model and tokenizer
-model_name = 'Qwen/Qwen2.5-Coder-3B-Instruct-GPTQ-Int4'
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name, low_cpu_mem_usage=True)
+model_name = 'THUDM/codegeex4-all-9b'
+tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+model = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    torch_dtype=torch.bfloat16,
+    low_cpu_mem_usage=True,
+    trust_remote_code=True
+)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device).eval()
+
+# Check if all modules are on GPU, if not disable Exllama
+if not torch.cuda.is_available():
+    model.disable_exllama = True
 
 # Move model to GPU if available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
 async def generate_response(prompt):
-    inputs = tokenizer.encode(prompt, return_tensors='pt').to(device)
-    attention_mask = torch.ones(inputs.shape, dtype=torch.long).to(device)
-    outputs = model.generate(
-        inputs, 
-        attention_mask=attention_mask, 
-        max_new_tokens=300, 
-        num_return_sequences=1, 
-        pad_token_id=tokenizer.eos_token_id
-    )
+    inputs = tokenizer.apply_chat_template(
+        [{"role": "user", "content": prompt}],
+        add_generation_prompt=True,
+        tokenize=True,
+        return_tensors="pt",
+        return_dict=True
+    ).to(device)
+    with torch.no_grad():
+        outputs = model.generate(**inputs, max_length=256)
+        outputs = outputs[:, inputs['input_ids'].shape[1]:]
     response = tokenizer.decode(outputs[0], skip_special_tokens=True)
     return response
 
 @bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user}!')
-    channel_id = 1312902190288867408 
-    channel = bot.get_channel(channel_id)
-    if channel:
-        await channel.send("Mill has woken up! 🤖")
-    else:
-        print(f"Channel with ID {channel_id} not found.")
+# async def on_ready():
+#     print(f'Logged in as {bot.user}!')
+#     channel_id = 1312902190288867408 
+#     channel = bot.get_channel(channel_id)
+#     if channel:
+#         await channel.send("Mill has woken up! 🤖")
+#     else:
+#         print(f"Channel with ID {channel_id} not found.")
 
 async def send_shutdown_message():
     channel_id = 1312902190288867408  
@@ -272,11 +298,7 @@ async def on_message(message):
 
     # Respond to 'lotr'
     elif "lotr" in message.content.lower():
-        await message.channel.send("LEGEND")
-        await asyncio.sleep(1)  # Wait for 1 second
-        await message.channel.send("...wait for it...")
-        await asyncio.sleep(1)  # Wait for 1 second
-        await message.channel.send("DARY")
+        await message.channel.send("LEGENDARYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
 
     # Respond to 'sunraku' or 'i hate sunraku'
     elif "i hate sunraku" in message.content.lower():
@@ -285,7 +307,6 @@ async def on_message(message):
         if sunraku:
             try:
                 # Timeout the user sunraku for a random duration between 1 and 3 minutes
-                timeout_duration = timedelta(minutes=random.randint(1, 3))
                 timeout_until = datetime.now(timezone.utc) + timeout_duration
                 await sunraku.edit(timed_out_until=timeout_until)
                 await message.channel.send(f"⏳ {sunraku.mention} has been timed out for {timeout_duration.total_seconds() // 60} minutes.")
