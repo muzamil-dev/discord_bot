@@ -8,12 +8,12 @@ import os
 import asyncio
 from datetime import timedelta, datetime, timezone
 from googletrans import Translator
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import pipeline
 import torch
 import signal
 from dotenv import load_dotenv
-import torch
 import warnings
+from concurrent.futures import ThreadPoolExecutor
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", message="`loss_type=None` was set in the config but it is unrecognised.Using the default loss: `ForCausalLMLoss`.")
@@ -64,50 +64,33 @@ spamIndic = 0
 # Should print True if CUDA is available
 print(torch.cuda.is_available())  
 
-# Load pre-trained model and tokenizer
-model_name = 'THUDM/codegeex4-all-9b'
-tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
-model = AutoModelForCausalLM.from_pretrained(
-    model_name,
-    torch_dtype=torch.bfloat16,
-    low_cpu_mem_usage=True,
-    trust_remote_code=True
-)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model.to(device).eval()
+# Configuration flag to enable or disable LLM
+ENABLE_LLM = True
 
-# Check if all modules are on GPU, if not disable Exllama
-if not torch.cuda.is_available():
-    model.disable_exllama = True
+if ENABLE_LLM:
+    # Load pre-trained model and tokenizer using pipeline
+    model_name = "distilgpt2"
+    pipe = pipeline("text-generation", model=model_name, device=0 if torch.cuda.is_available() else -1)
 
-# Move model to GPU if available
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model.to(device)
+executor = ThreadPoolExecutor(max_workers=1)
 
 async def generate_response(prompt):
-    inputs = tokenizer.apply_chat_template(
-        [{"role": "user", "content": prompt}],
-        add_generation_prompt=True,
-        tokenize=True,
-        return_tensors="pt",
-        return_dict=True
-    ).to(device)
-    with torch.no_grad():
-        outputs = model.generate(**inputs, max_length=256)
-        outputs = outputs[:, inputs['input_ids'].shape[1]:]
-    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    if not ENABLE_LLM:
+        return "LLM is disabled."
+    
+    loop = asyncio.get_event_loop()
+    try:
+        response = await asyncio.wait_for(loop.run_in_executor(executor, sync_generate_response, prompt), timeout=30)
+    except asyncio.TimeoutError:
+        response = "Response generation took too long. Mill's brain is cooked for now."
+    return response
+
+def sync_generate_response(prompt):
+    # Use the pipeline to generate a response
+    response = pipe(prompt, max_length=256, num_return_sequences=1, truncation=True)[0]['generated_text']
     return response
 
 @bot.event
-# async def on_ready():
-#     print(f'Logged in as {bot.user}!')
-#     channel_id = 1312902190288867408 
-#     channel = bot.get_channel(channel_id)
-#     if channel:
-#         await channel.send("Mill has woken up! 🤖")
-#     else:
-#         print(f"Channel with ID {channel_id} not found.")
-
 async def send_shutdown_message():
     channel_id = 1312902190288867408  
     channel = bot.get_channel(channel_id)
@@ -306,6 +289,8 @@ async def on_message(message):
         sunraku = message.guild.get_member(sunraku_id)
         if sunraku:
             try:
+                # Define a random timeout duration between 1 and 3 minutes
+                timeout_duration = timedelta(minutes=random.randint(1, 3))
                 # Timeout the user sunraku for a random duration between 1 and 3 minutes
                 timeout_until = datetime.now(timezone.utc) + timeout_duration
                 await sunraku.edit(timed_out_until=timeout_until)
@@ -451,8 +436,7 @@ async def translate(ctx, target_language: str, *, text:str):
     except Exception as e:
         await ctx.send(f"Sorry, I coundn't translate that. Error: {e}")
 
-    #dox command
-    # Fake dox details
+# Fake dox details
 fake_addresses = [
     "123 Fake Street, Springfield",
     "742 Evergreen Terrace, Springfield",
