@@ -1,4 +1,4 @@
 .env
-\venv
+.venv
 locate_cache.py
 tmp
