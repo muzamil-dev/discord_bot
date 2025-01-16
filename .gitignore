@@ -1,0 +1,6 @@
+reminders.json
+config.json
+bot.log
+locate_cache.py
+__pycache__/
+.venv/
