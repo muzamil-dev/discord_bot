@@ -1,0 +1,72 @@
+{
+    "COMMAND_PREFIX": "!",
+    "REECE_ENABLE": false,
+    "CHAT_MODE": true,
+    "REMINDERS_FILE_NAME": "reminders.json",
+    "TIMERS_FILE_NAME": "timers.json",
+    "status": "online",
+    "activity": {
+        "type": "playing",
+        "name": "with the API"
+    },
+    "youtube_dl_options": {
+        "format": "bestaudio/best",
+        "noplaylist": true
+    },
+    "gif_urls": [
+        "https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif",
+        "https://media.giphy.com/media/3o7abldj0b3rxrZUxW/giphy.gif",
+        "https://tenor.com/view/cat-kitty-running-playing-having-fun-gif-26860048",
+        "https://tenor.com/view/yugioh-trap-card-trap-triggered-gif-12909225702038116",
+        "https://tenor.com/view/my-honest-reaction-honest-reaction-skull-skeleton-gif-7769318199696770420"
+    ],
+    "image_urls": [
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQd0LFdypsYvgil3bXjwExCaBXe6lcfl59L0Q&s",
+        "https://dims.apnews.com/dims4/default/06edab5/2147483647/strip/false/crop/8145x5429+0+0/resize/1486x990!/quality/90/?url=https%3A%2F%2Fassets.apnews.com%2Fa8%2Ff8%2F88f3b8e5167fd80b24a4172d27c4%2Fe8aaccd031bf4d49a01a1ec253c623f0",
+        "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.cs.ucf.edu%2Fwp-content%2Fuploads%2F2019%2F09%2Fimg_ahmed.jpg&f=1&nofb=1&ipt=d9ef23b05c329d78c00afda6dd5384426aa231efe2757ed1779923d6e54c04ec&ipo=images",
+        "https://i.kym-cdn.com/entries/icons/mobile/000/052/549/luigi-mangione-perp-walk-photo.jpg"
+    ],
+    "cool_emojis": ["🐐", "🚀", "💪", "🔥", "❤️", "🎯", "🌟", "🏆", "⚡", "👑"],
+    "fake_addresses": [
+        "123 Fake Street, Springfield",
+        "742 Evergreen Terrace, Springfield",
+        "221B Baker Street, London",
+        "31 Spooner Street, Quahog",
+        "1600 Pennsylvania Ave NW, Washington, DC"
+    ],
+    "fake_phone_numbers": [
+        "555-1234",
+        "867-5309",
+        "404-404-4044",
+        "123-456-7890",
+        "800-GET-LOST"
+    ],
+    "fake_ips": [
+        "192.168.1.1",
+        "127.0.0.1",
+        "69.420.666.1337",
+        "255.255.255.255",
+        "8.8.8.8"
+    ],
+    "events": [
+        "hello",
+        "react",
+        "image",
+        "outside",
+        "leetcode",
+        "lotr",
+        "i hate sunraku",
+        "sunraku",
+        "good night",
+        "offline",
+        "i love millbot",
+        "millbot nerd",
+        "dice roll",
+        "coin flip",
+        "one does not",
+        "generate",
+        "rm -rf",
+        "griddy",
+        "reece"
+    ]
+}

@@ -28,6 +28,7 @@ fake_phone_numbers = config["fake_phone_numbers"]
 fake_ips = config["fake_ips"]
 events = config["events"]
 REMINDERS_FILE = config["REMINDERS_FILE_NAME"]
+TIMERS_FILE_NAME = config["TIMERS_FILE_NAME"]
 
 @commands.command()
 async def dox(ctx, member: discord.Member = None):
@@ -154,6 +155,9 @@ async def meme(ctx):
         await ctx.send(meme_url)
     else:
         await ctx.send("Couldn't fetch a meme at the moment. Please try again later.")
+
+# ----------------------------- Stopwatch  Commands -----------------------------
+
 
 @commands.command()
 async def toggle_chat(ctx):

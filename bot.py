@@ -66,6 +66,11 @@ async def handle_i_hate_sunraku(message):
             await message.channel.send(f"❌ An error occurred: {str(e)}")
             logging.error(f"An error occurred while timing out sunraku: {str(e)}")
 
+# Function to randomize the case of each character in a string
+def randomize_case(text):
+    return ''.join(random.choice([char.upper(), char.lower()]) for char in text)
+
+
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
@@ -102,22 +107,22 @@ async def on_message(message):
             await message.channel.send("LEGENDARYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
             logging.info(f"Responded to 'lotr' from {message.author}")
 
-        # # Respond to 'sunraku' or 'i hate sunraku'
-        # elif "i hate sunraku" in message.content.lower():
-        #     sunraku_id = 1207552021385969675
-        #     sunraku = message.guild.get_member(sunraku_id)
-        #     timeout_duration = datetime.timedelta(minutes=random.randint(1, 5))
-        #     timeout_minutes = timeout_duration.total_seconds() // 60
-        #     if sunraku:
-        #         try:
-        #             # Timeout the user sunraku for a random duration between 5 and 10 minutes
-        #             timeout_until = datetime.datetime.now(timezone.utc) + timeout_duration
-        #             await sunraku.edit(timed_out_until=timeout_until)
-        #             await message.channel.send(f"⏳ {sunraku.mention} has been timed out for {timeout_minutes} minutes.")
-        #             logging.info(f"Timed out {sunraku.display_name} for {timeout_minutes} minutes by {message.author}")
-        #         except Exception as e:
-        #             await message.channel.send(f"❌ An error occurred: {str(e)}")
-        #             logging.error(f"An error occurred while timing out sunraku: {str(e)}")
+        # Respond to 'sunraku' or 'i hate sunraku'
+        elif "i hate sunraku" in message.content.lower():
+            sunraku_id = 1207552021385969675
+            sunraku = message.guild.get_member(sunraku_id)
+            timeout_duration = datetime.timedelta(minutes=random.randint(5, 20))
+            timeout_minutes = timeout_duration.total_seconds() // 60
+            if sunraku:
+                try:
+                    # Timeout the user sunraku for a random duration between 5 and 10 minutes
+                    timeout_until = datetime.datetime.now(timezone.utc) + timeout_duration
+                    await sunraku.edit(timed_out_until=timeout_until)
+                    await message.channel.send(f"⏳ {sunraku.mention} has been timed out for {timeout_minutes} minutes.")
+                    logging.info(f"Timed out {sunraku.display_name} for {timeout_minutes} minutes by {message.author}")
+                except Exception as e:
+                    await message.channel.send(f"❌ An error occurred: {str(e)}")
+                    logging.error(f"An error occurred while timing out sunraku: {str(e)}")
         
         elif "sunraku" in message.content.lower():
             await message.channel.send("I hate Sunraku")
@@ -146,6 +151,8 @@ async def on_message(message):
 
         # Respond to 'millbot nerd'
         elif "millbot nerd" in message.content.lower():
+            nerdy_response = "🤓MiLlBoT NeRd"
+
             # Check if the message is a reply to another message
             if message.reference and message.reference.message_id:
                 # Fetch the replied message
@@ -154,8 +161,19 @@ async def on_message(message):
                 # Add the 🤓 emoji to the replied message
                 await replied_message.add_reaction("🤓")
 
+                # Include the content of the replied message in the response
+                quoted_sentence = randomize_case(replied_message.content)
+                nerdy_response += f": \"{quoted_sentence}\""
+
+            # Check if the message contains a quoted sentence
+            elif '"' in message.content:
+                start = message.content.find('"') + 1
+                end = message.content.rfind('"')
+                quoted_sentence = message.content[start:end]
+                quoted_sentence = randomize_case(quoted_sentence)
+                nerdy_response += f": \"{quoted_sentence}\""
+
             # Send the nerdy response
-            nerdy_response = "🤓MiLlBoT NeRd"
             await message.channel.send(nerdy_response)
             logging.info(f"Responded to 'millbot nerd' from {message.author}")
 
