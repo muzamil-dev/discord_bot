@@ -1,4 +1,6 @@
-.env
-.venv
+reminders.json
+config.json
+bot.log
 locate_cache.py
-tmp
+__pycache__/
+.venv/
