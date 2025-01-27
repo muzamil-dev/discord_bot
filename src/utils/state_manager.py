@@ -37,7 +37,6 @@ def get_toggle_bot():
     return config.get('TOGGLE_BOT', True)
 
 def set_toggle_bot(value):
-    # Only this function saves to config
     config = load_config()
     config['TOGGLE_BOT'] = value
     save_config(config)

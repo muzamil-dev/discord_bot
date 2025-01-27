@@ -2,7 +2,8 @@ from discord.ext import commands # type: ignore
 import time
 import logging
 from datetime import datetime, timedelta
-from src.features.reminder.reminder_manager import save_reminder, schedule_reminder, get_user_reminders, remove_reminder
+from dateutil import parser # type: ignore
+from src.features.reminder.reminder_manager import save_reminder, schedule_reminder, get_user_reminders, remove_reminder 
 
 class RemindCommand(commands.Cog):
     def __init__(self, bot):
@@ -13,7 +14,8 @@ class RemindCommand(commands.Cog):
         """Sets a reminder for a specified time or date
         Usage: !remindme 1h30m Check the oven
                !remindme on 31st Check the oven
-               !remindme on 5/23 Check the oven"""
+               !remindme on 5/23 Check the oven
+               !remindme on 4/6/2026 Check the oven"""
         
         total_seconds = 0
         time_units = {'y': 31536000, 'mo': 2592000, 'd': 86400, 'h': 3600, 'm': 60, 's': 1}
@@ -21,33 +23,19 @@ class RemindCommand(commands.Cog):
         if time_str.startswith('on '):
             date_str = time_str[3:]
             try:
-                # Remove ordinal suffixes and trim whitespace
-                date_str = (date_str.replace('st', '')
-                                .replace('nd', '')
-                                .replace('rd', '')
-                                .replace('th', '')
-                                .strip())
+                # Parse the date string using dateutil.parser
+                reminder_date = parser.parse(date_str, fuzzy=True, default=datetime.now())
                 
                 current_time = datetime.now()
-                
-                if '/' in date_str:
-                    reminder_date = datetime.strptime(date_str, '%m/%d')
-                    reminder_date = reminder_date.replace(year=current_time.year)
-                else:
-                    # Convert day number to timestamp
-                    day = int(date_str)
-                    reminder_date = current_time.replace(day=day, hour=23, minute=59, second=59)
-                
                 if reminder_date < current_time:
                     reminder_date = reminder_date.replace(year=current_time.year + 1)
                     
                 # Convert to Unix timestamp
                 total_seconds = (reminder_date.timestamp() - current_time.timestamp())
-            except ValueError as e:
-                await ctx.send("Invalid date format. Please use a format like 'on 31st' or 'on 5/23'.")
+            except (ValueError, OverflowError) as e:
+                await ctx.send("Invalid date format. Please use a format like 'on 31st', 'on 5/23', or 'on 4/6/2026'.")
                 logging.error(f"Invalid date format: {date_str} - {str(e)}")
                 return
-
 
         else:
             current = ''
@@ -75,10 +63,10 @@ class RemindCommand(commands.Cog):
             
             save_reminder(reminder)
             self.bot.loop.create_task(schedule_reminder(self.bot, reminder, total_seconds))
-            await ctx.send(f"I'll remind you about '{reminder_text}' on {date_str}" if time_str.startswith('on ') else f"I'll remind you about '{reminder_text}' in {time_str}")
+            await ctx.send(f"I'll remind you about '{reminder_text}' on {reminder_date.strftime('%Y-%m-%d %H:%M:%S')}" if time_str.startswith('on ') else f"I'll remind you about '{reminder_text}' in {time_str}")
             logging.info(f"Reminder set by {ctx.author} for {time_str} from now")
         else:
-            await ctx.send("Invalid time format. Please use a format like '1y2mo3d4h5m6s' or 'on 31st' or 'on 5/23'.")
+            await ctx.send("Invalid time format. Please use a format like '1y2mo3d4h5m6s' or 'on 31st' or 'on 5/23' or 'on 4/6/2026'.")
 
     @commands.command(name='showreminds', help='Shows your active reminders and the remaining time')
     async def show_reminds(self, ctx):

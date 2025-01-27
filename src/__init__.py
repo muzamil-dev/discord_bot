@@ -1,5 +1,6 @@
 from .commands import setup_all_commands
 from .events import setup_ready_handler, setup_message_handler
+from .events.error_handler import setup_error_handler
 from .features import (
     load_reminders,
     save_reminder,
@@ -7,7 +8,6 @@ from .features import (
     schedule_reminder
 )
 from .utils import (
-    setup_logging,
     get_chat_mode,
     set_chat_mode,
     get_reece_enable,
@@ -20,13 +20,13 @@ from .utils import (
 
 __all__ = [
     'setup_all_commands',
-    'setup_ready_handler',
+    'setup_ready_handler', 
     'setup_message_handler',
+    'setup_error_handler',
     'load_reminders',
     'save_reminder',
-    'remove_reminder',
+    'remove_reminder', 
     'schedule_reminder',
-    'setup_logging',
     'get_chat_mode',
     'set_chat_mode',
     'get_reece_enable',

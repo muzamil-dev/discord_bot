@@ -1,6 +1,5 @@
 import asyncio
 import discord # type: ignore
-import requests # type: ignore
 import logging
 import json
 import random

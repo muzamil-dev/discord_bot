@@ -1,19 +1,16 @@
 import os
 import json
 import asyncio
+import logging  # Import logging module
 import discord # type: ignore
 from discord.ext import commands # type: ignore
 from dotenv import load_dotenv # type: ignore
 
-from src.utils.logger import setup_logging
 from src.utils.state_manager import get_toggle_bot
-from src.events.ready_handler import setup_ready_handler
-from src.events.messages.message_router import setup_message_handler
-from src.events.error_handler import setup_error_handler # type: ignore
-from src.commands import setup_all_commands
+from src import setup_ready_handler, setup_message_handler, setup_all_commands
+from src.commands.utility.search_command import setup_search_command  # type: ignore
+from src.utils.llm import setup_llm_command # type: ignore 
 
-# Set up logging
-setup_logging()
 
 # Load environment variables from the .env file inside .venv
 dotenv_path = os.path.join(os.path.dirname(__file__), '.venv', '.env')
@@ -23,8 +20,6 @@ load_dotenv(dotenv_path)
 # Print environment variables for debugging
 discord_bot_token = os.getenv('DISCORD_BOT_TOKEN')
 the_one_api_key = os.getenv('THE_ONE_API_KEY')
-# print("DISCORD_BOT_TOKEN:", discord_bot_token)
-# print("THE_ONE_API_KEY:", the_one_api_key)
 
 # Load config and create bot
 with open('config/config.json') as config_file:
@@ -81,7 +76,8 @@ async def setup():
     await setup_all_commands(bot)
     await setup_ready_handler(bot)
     await setup_message_handler(bot)
-    await setup_error_handler(bot)
+    await setup_llm_command(bot) 
+    await setup_search_command(bot)  
 
 # Run setup and start bot
 async def main():
