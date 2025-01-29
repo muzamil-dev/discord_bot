@@ -1,6 +1,7 @@
 import json
 import random
 import logging
+import requests # type: ignore
 from discord.ext import commands # type: ignore
 from datetime import datetime, timezone, timedelta
 from .hello_response import handle_hello
@@ -11,6 +12,11 @@ from .moonraku_handler import handle_moonraku
 from src.commands.quotes.lotr_command import LotrCommand
 from src.utils.state_manager import get_toggle_bot, get_toggle_sunraku, get_reece_enable
 from src.utils.llm import llm # updated import
+import nltk # type: ignore
+from nltk.sentiment import SentimentIntensityAnalyzer # type: ignore
+import emoji # type: ignore
+
+nltk.download('vader_lexicon')
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -20,6 +26,15 @@ with open('config/config.json') as config_file:
     config = json.load(config_file)
 
 allowed_commands = config.get('ALLOWED_COMMANDS', [])
+random_react_chance = config.get('random_react_chance', 0.5)  # Default to 50% chance
+
+# Initialize the sentiment analyzer
+sia = SentimentIntensityAnalyzer()
+
+# Define emoji categories
+positive_emojis = [e for e in emoji.EMOJI_DATA if emoji.is_emoji(e)]
+negative_emojis = [e for e in emoji.EMOJI_DATA if emoji.is_emoji(e)]
+neutral_emojis = [e for e in emoji.EMOJI_DATA if emoji.is_emoji(e)]
 
 async def setup_message_handler(bot):
     @bot.event
@@ -45,9 +60,28 @@ async def setup_message_handler(bot):
 
             content = message.content.lower()
 
+            # Introduce a random chance to react
+            if random.random() < random_react_chance:
+                # Analyze the sentiment of the message
+                sentiment = sia.polarity_scores(content)
+                if sentiment['compound'] >= 0.05:
+                    sentiment_type = 'positive'
+                    emoji_list = positive_emojis
+                elif sentiment['compound'] <= -0.05:
+                    sentiment_type = 'negative'
+                    emoji_list = negative_emojis
+                else:
+                    sentiment_type = 'neutral'
+                    emoji_list = neutral_emojis
+
+                # Select a random emoji from the list
+                emoji_choice = random.choice(emoji_list)
+                await message.add_reaction(emoji_choice)
+                logger.info(f"Reacted to message: '{message.content}' from {message.author} with emoji: {emoji_choice}")
+
             if "hello" in content:
                 await handle_hello(message)
-            elif "react" in content:
+            elif "reat" in content:
                 await message.channel.send(random.choice(config["gif_urls"]))
                 logger.info(f"Responded to 'react' from {message.author}")
             elif "image" in content:

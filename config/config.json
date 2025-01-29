@@ -6,7 +6,9 @@
     "TOGGLE_SUNRAKU": false,
     "REMINDERS_FILE_NAME": "reminders.json",
     "TIMERS_FILE_NAME": "timers.json",
-    "DEVICE_IP": "http://192.168.1.13",
+    "DEVICE_IP": "http://192.168.1.31",
+    "MODEL_NAME": "huihui_ai/deepseek-r1-abliterated:32b",
+    "random_react_chance": 0.1,
     "ALLOWED_COMMANDS": [
         "!toggle_bot",
         "!remindme",

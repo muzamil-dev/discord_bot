@@ -29,7 +29,7 @@ class ToggleCommands(commands.Cog):
 
     @commands.command()
     async def toggle_bot(self, ctx):
-        allowed_user_ids = [1130226630544068648, 297469573253300224]
+        allowed_user_ids = [1130226630544068648, 297469573253300224, 1126209939384307732]
         if ctx.author.id in allowed_user_ids:
             current_state = get_toggle_bot()
             new_state = not current_state
