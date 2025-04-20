@@ -1,4 +1,4 @@
-# Gerbot
+# Millbot
 The modular discord bot
 
 ## How to Edit

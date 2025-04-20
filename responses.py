@@ -38,11 +38,11 @@ QUOTE = functools.partial(misc.quote, message=None)
 
 # TRIGGER WORDS
 triggers = [
-    "gerbot",
-    "gerber",
-    "gerbie",
-    "gerby",
-    "gerbing"
+    "millbot",
+    "bot",
+    "meade",
+    "tin skin",
+    "dumbass"
 ]
 
 # RESPONSES
@@ -183,7 +183,7 @@ responses = {
         "Pro tip: leaving your oven on means its always ready to cook",
         "Pro tip: there IS a monster under your bed (its me)",
         "Pro Tip: raise the classes curve yo tour own benefit by sacrificing one or more of you classmates by telling them to fail on purpose, lowering the total average",
-        "Pro Tip: Name your functions and variables \"gerbot\" and they are guaranteed to work properly"
+        "Pro Tip: Name your functions and variables \"millbot\" and they are guaranteed to work properly"
     ),
 
     "react" : (
@@ -210,6 +210,8 @@ responses = {
         discord.File("files/img/ha.jpg"),
         discord.File("files/img/jarvis.jpg"),
         discord.File("files/img/smug.jpg"),
+        discord.File("files/img/uglybastard.png"),
+        discord.File("files/img/sus.png"),
     ),
 
     "audio" : (
@@ -260,9 +262,9 @@ responses = {
     **Marry me** : Become married (timeout immunity)
     **Pebble(@)** : Gift someone a pebble for points
     **Collection** : View a users pebbles
-    **fun fact** : gerbot approved fun fact
-    **pro tip** : gerbot approved pro tip
-    **motivate** : gerbot may or may not say something motivational
+    **fun fact** : millbot approved fun fact
+    **pro tip** : millbot approved pro tip
+    **motivate** : millbot may or may not say something motivational
     **doxx** : Win any argument
     **update** : See changelog and newest commands
     **Lock in** : Avoid all distractions
@@ -314,7 +316,7 @@ responses = {
             "^ this person is going to fail the class",
             "Im calling the cops on you",
             "to gerb or not to gerb",
-            "Its me gerbot",
+            "Its me millbot",
             "Your favorite person has appeared",
             "i know where you live",
             "you are now going to pass the class",
@@ -397,7 +399,7 @@ responses = {
             "money is an illusion",
             "reality's an illusion, the universe is a hologram, buy gold byeee",
             "ping someone and i will drop their grade to 0",
-            "gerbot AMA session starting now:",
+            "millbot AMA session starting now:",
             "will you marry me?",
             "will you divorce me?",
             "Everybody simultaneously fail the next test i cant fail all of you sic semper tyrannis",
@@ -479,7 +481,7 @@ responses = {
             "i a watching you",
             "i still haven't played marvel rivals is it actually any good?",
             "python is actually lawless you can put functions in variables and return more than one thing im scared",
-            "say gerbot in 48.98 seconds or die",
+            "say millbot in 48.98 seconds or die",
             "kys(keep yourself safe)",
             "the government will kill me for telling you this but whe",
             "There will be cake",

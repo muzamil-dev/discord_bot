@@ -433,7 +433,7 @@ async def quote(message : discord.Message):
         data.append([quote_message.author.id, quote])
         json_manager.set_json_var(message.channel.guild.id, quote_key, data)
 
-        await quote_message.reply("Gerbot will remember that.")
+        await quote_message.reply("Millbot will remember that.")
 
     else:
         data: list = json_manager.get_json_var(message.channel.guild.id, quote_key) or []
