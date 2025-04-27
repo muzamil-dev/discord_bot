@@ -83,6 +83,7 @@ async def on_message(message: discord.Message) -> None:
 def main() -> None:
     client.run(token=config.TOKEN)
 
+
 if __name__ == '__main__':
     main()
 
