@@ -67,6 +67,7 @@ async def on_message(message: discord.Message) -> None:
 
     is_relevant : bool = any(x in message.content for x in responses.triggers) or config.no_trigger
 
+
     # PRINT INPUT
     if config.print_input and (config.print_unrelevant or is_relevant):
         username: str = str(message.author)
